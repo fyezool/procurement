@@ -28,6 +28,7 @@ class Procurement {
 
   Map<String, dynamic> toJson() {
     return {
+      'id' : id,
       'title': title,
       'description': description,
       'status': status,
