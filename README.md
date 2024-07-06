@@ -33,4 +33,4 @@
 ```
 
 ## Docker-compose config
-- Docker-compose config for mongodb is using super insecured settings. P;ease refrain your fingers from using this config. You have been warned. 
+- Docker-compose config for mongodb is using super insecured settings. Please refrain your fingers from using this config. You have been warned. 
