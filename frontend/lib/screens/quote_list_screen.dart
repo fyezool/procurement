@@ -10,11 +10,15 @@ class QuoteListScreen extends StatefulWidget {
 
 class _QuoteListScreenState extends State<QuoteListScreen> {
   List<Quote> quotes = [];
+  List<String> procurementIds = [];
+  List<String> supplierIds = [];
 
   @override
   void initState() {
     super.initState();
     fetchQuotes();
+    fetchProcurementIds();
+    fetchSupplierIds();
   }
 
   Future<void> fetchQuotes() async {
@@ -23,6 +27,28 @@ class _QuoteListScreenState extends State<QuoteListScreen> {
       List<dynamic> data = jsonDecode(response.body);
       setState(() {
         quotes = data.map((quote) => Quote.fromJson(quote)).toList();
+      });
+    }
+  }
+
+  Future<void> fetchProcurementIds() async {
+    final response =
+        await http.get(Uri.parse('http://localhost:8080/procurements'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      setState(() {
+        procurementIds = data.map((item) => item['id'].toString()).toList();
+      });
+    }
+  }
+
+  Future<void> fetchSupplierIds() async {
+    final response =
+        await http.get(Uri.parse('http://localhost:8080/suppliers'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      setState(() {
+        supplierIds = data.map((item) => item['id'].toString()).toList();
       });
     }
   }
@@ -65,6 +91,8 @@ class _QuoteListScreenState extends State<QuoteListScreen> {
                     createQuote(quote);
                     Navigator.of(context).pop();
                   },
+                  procurementIds: procurementIds,
+                  supplierIds: supplierIds,
                 ),
               );
             },
@@ -78,8 +106,14 @@ class _QuoteListScreenState extends State<QuoteListScreen> {
 
 class QuoteForm extends StatefulWidget {
   final Function(Quote) onSubmit;
+  final List<String> procurementIds;
+  final List<String> supplierIds;
 
-  QuoteForm({required this.onSubmit});
+  QuoteForm({
+    required this.onSubmit,
+    required this.procurementIds,
+    required this.supplierIds,
+  });
 
   @override
   _QuoteFormState createState() => _QuoteFormState();
@@ -87,8 +121,8 @@ class QuoteForm extends StatefulWidget {
 
 class _QuoteFormState extends State<QuoteForm> {
   final _formKey = GlobalKey<FormState>();
-  final _procurementIdController = TextEditingController();
-  final _supplierIdController = TextEditingController();
+  String? _selectedProcurementId;
+  String? _selectedSupplierId;
   final _totalCostController = TextEditingController();
 
   @override
@@ -98,22 +132,44 @@ class _QuoteFormState extends State<QuoteForm> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextFormField(
-            controller: _procurementIdController,
+          DropdownButtonFormField<String>(
+            value: _selectedProcurementId,
             decoration: InputDecoration(labelText: 'Procurement ID'),
+            items: widget.procurementIds.map((String id) {
+              return DropdownMenuItem<String>(
+                value: id,
+                child: Text(id),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedProcurementId = newValue;
+              });
+            },
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter a procurement ID';
+                return 'Please select a procurement ID';
               }
               return null;
             },
           ),
-          TextFormField(
-            controller: _supplierIdController,
+          DropdownButtonFormField<String>(
+            value: _selectedSupplierId,
             decoration: InputDecoration(labelText: 'Supplier ID'),
+            items: widget.supplierIds.map((String id) {
+              return DropdownMenuItem<String>(
+                value: id,
+                child: Text(id),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedSupplierId = newValue;
+              });
+            },
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter a supplier ID';
+                return 'Please select a supplier ID';
               }
               return null;
             },
@@ -134,9 +190,9 @@ class _QuoteFormState extends State<QuoteForm> {
               if (_formKey.currentState!.validate()) {
                 widget.onSubmit(
                   Quote(
-                    procurementId: _procurementIdController.text,
-                    supplierId: _supplierIdController.text,
-                    items: [], // You can add items here or handle them separately
+                    procurementId: _selectedProcurementId!,
+                    supplierId: _selectedSupplierId!,
+                    items: [],
                     totalCost: double.parse(_totalCostController.text),
                   ),
                 );
