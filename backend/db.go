@@ -12,7 +12,7 @@ import (
 var client *mongo.Client
 
 func init() {
-	clientOptions := options.Client().ApplyURI("mongodb://root:example@localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://root:example@raspberrypi.diman:27017")
 	var err error
 	client, err = mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
