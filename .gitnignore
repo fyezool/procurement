@@ -1,0 +1,15 @@
+backend/config.json
+
+# Ignore any .env files if you're using environment variables
+.env
+
+# Common Go ignores
+backend/*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+/Godeps/
