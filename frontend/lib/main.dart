@@ -1,11 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+
+// Screens
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/vendors_screen.dart';
-import 'screens/purchase_orders_screen.dart';
-import 'screens/app_shell.dart'; // Import the new AppShell
+import 'screens/app_shell.dart';
+import 'screens/procurement/procurement_main_screen.dart';
+import 'screens/procurement/requisitions_screen.dart';
+import 'screens/procurement/create_requisition_screen.dart';
+import 'screens/procurement/my_requisitions_screen.dart';
+import 'screens/procurement/pending_requisitions_screen.dart';
+import 'screens/procurement/purchase_orders_screen.dart';
+import 'screens/procurement/create_purchase_order_screen.dart';
+import 'screens/procurement/approvals_screen.dart';
+import 'screens/vendors/vendor_directory_screen.dart';
+import 'screens/vendors/add_vendor_screen.dart';
+import 'screens/vendors/vendor_performance_screen.dart';
+import 'screens/vendors/vendor_communications_screen.dart';
+import 'screens/reports/reports_screen.dart';
+import 'screens/reports/analytics_screen.dart';
+import 'screens/reports/vendor_reports_screen.dart';
+import 'screens/reports/spend_analysis_screen.dart';
+import 'screens/admin/admin_screen.dart';
+import 'screens/admin/user_management_screen.dart';
+import 'screens/admin/role_management_screen.dart';
+import 'screens/admin/system_settings_screen.dart';
+
+// Services
 import 'services/auth_service.dart';
 import 'services/api_service.dart';
 
@@ -42,15 +64,50 @@ class ProcurementApp extends StatelessWidget {
                     path: '/dashboard',
                     builder: (context, state) => const DashboardScreen(),
                   ),
+                  // Procurement Routes
                   GoRoute(
-                    path: '/vendors',
-                    builder: (context, state) => const VendorsScreen(),
+                    path: '/procurement',
+                    builder: (context, state) => const ProcurementMainScreen(),
                   ),
                   GoRoute(
-                    path: '/purchase-orders',
+                    path: '/procurement/requisitions',
+                    builder: (context, state) => const RequisitionsScreen(),
+                  ),
+                  GoRoute(
+                    path: '/procurement/requisitions/my',
+                    builder: (context, state) => const MyRequisitionsScreen(),
+                  ),
+                  GoRoute(
+                    path: '/procurement/purchase-orders',
                     builder: (context, state) => const PurchaseOrdersScreen(),
                   ),
-                  // Add other routes that should have the shell here
+                   GoRoute(
+                    path: '/procurement/approvals',
+                    builder: (context, state) => const ApprovalsScreen(),
+                  ),
+                  // Vendor Routes
+                  GoRoute(
+                    path: '/vendors',
+                    builder: (context, state) => const VendorDirectoryScreen(),
+                  ),
+                  // Reports Routes
+                  GoRoute(
+                    path: '/reports',
+                    builder: (context, state) => const ReportsScreen(),
+                  ),
+                  // Admin Routes
+                   GoRoute(
+                    path: '/admin',
+                    builder: (context, state) => const AdminScreen(),
+                  ),
+                   GoRoute(
+                    path: '/admin/users',
+                    builder: (context, state) => const UserManagementScreen(),
+                  ),
+                   GoRoute(
+                    path: '/admin/settings',
+                    builder: (context, state) => const SystemSettingsScreen(),
+                  ),
                 ],
               ),
             ],
