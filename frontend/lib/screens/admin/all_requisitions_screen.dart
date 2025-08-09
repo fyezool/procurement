@@ -2,25 +2,25 @@ import 'package:flutter/material.dart';
 import '../../models/requisition.dart';
 import '../../services/api_service.dart';
 
-class MyRequisitionsScreen extends StatefulWidget {
-  const MyRequisitionsScreen({Key? key}) : super(key: key);
+class AllRequisitionsScreen extends StatefulWidget {
+  const AllRequisitionsScreen({Key? key}) : super(key: key);
 
   @override
-  _MyRequisitionsScreenState createState() => _MyRequisitionsScreenState();
+  _AllRequisitionsScreenState createState() => _AllRequisitionsScreenState();
 }
 
-class _MyRequisitionsScreenState extends State<MyRequisitionsScreen> {
+class _AllRequisitionsScreenState extends State<AllRequisitionsScreen> {
   late Future<List<Requisition>> _requisitionsFuture;
 
   @override
   void initState() {
     super.initState();
-    _requisitionsFuture = ApiService().getMyRequisitions();
+    _requisitionsFuture = ApiService().getAllRequisitions();
   }
 
   void _refreshRequisitions() {
     setState(() {
-      _requisitionsFuture = ApiService().getMyRequisitions();
+      _requisitionsFuture = ApiService().getAllRequisitions();
     });
   }
 
@@ -28,7 +28,7 @@ class _MyRequisitionsScreenState extends State<MyRequisitionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Requisitions'),
+        title: const Text('All Requisitions'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -44,7 +44,7 @@ class _MyRequisitionsScreenState extends State<MyRequisitionsScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('You have not created any requisitions.'));
+            return const Center(child: Text('No requisitions found.'));
           }
 
           final requisitions = snapshot.data!;
@@ -55,36 +55,18 @@ class _MyRequisitionsScreenState extends State<MyRequisitionsScreen> {
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('Requester ID')),
                   DataColumn(label: Text('Description')),
                   DataColumn(label: Text('Status')),
                   DataColumn(label: Text('Total Price')),
-                  DataColumn(label: Text('Actions')),
                 ],
                 rows: requisitions.map((req) {
-                  final bool isPending = req.status == 'Pending';
                   return DataRow(cells: [
                     DataCell(Text(req.id.toString())),
+                    DataCell(Text(req.requesterId.toString())),
                     DataCell(Text(req.itemDescription)),
                     DataCell(Text(req.status)),
                     DataCell(Text('\$${req.totalPrice.toStringAsFixed(2)}')),
-                    DataCell(Row(
-                      children: [
-                        if (isPending)
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              // TODO: Implement edit requisition dialog
-                            },
-                          ),
-                        if (isPending)
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              // TODO: Implement delete requisition confirmation
-                            },
-                          ),
-                      ],
-                    )),
                   ]);
                 }).toList(),
               ),

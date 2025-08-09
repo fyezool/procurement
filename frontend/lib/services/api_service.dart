@@ -1,4 +1,7 @@
 import 'package:dio/dio.dart';
+import '../models/user.dart';
+import '../models/requisition.dart';
+import '../models/purchase_order.dart';
 import 'web_storage_service.dart';
 
 class ApiService {
@@ -45,5 +48,113 @@ class ApiService {
 
   static Future<Response<T>> delete<T>(String path) {
     return _instance.dio.delete<T>(path);
+  }
+
+  Future<List<User>> getUsers() async {
+    try {
+      final response = await _dio.get('/users');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((userJson) => User.fromJson(userJson)).toList();
+      } else {
+        throw Exception('Failed to load users');
+      }
+    } catch (e) {
+      throw Exception('Failed to load users: $e');
+    }
+  }
+
+  Future<User> updateUser(int id, String name, String role) async {
+    try {
+      final response = await _dio.put(
+        '/users/$id',
+        data: {'name': name, 'role': role},
+      );
+      if (response.statusCode == 200) {
+        return User.fromJson(response.data);
+      } else {
+        throw Exception('Failed to update user');
+      }
+    } catch (e) {
+      throw Exception('Failed to update user: $e');
+    }
+  }
+
+  Future<void> deleteUser(int id) async {
+    try {
+      final response = await _dio.delete('/users/$id');
+      if (response.statusCode != 204) {
+        throw Exception('Failed to delete user');
+      }
+    } catch (e) {
+      throw Exception('Failed to delete user: $e');
+    }
+  }
+
+  Future<List<Requisition>> getMyRequisitions() async {
+    try {
+      final response = await _dio.get('/requisitions/my');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => Requisition.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load requisitions');
+      }
+    } catch (e) {
+      throw Exception('Failed to load requisitions: $e');
+    }
+  }
+
+  Future<Requisition> updateRequisition(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/requisitions/$id', data: data);
+      if (response.statusCode == 200) {
+        return Requisition.fromJson(response.data);
+      } else {
+        throw Exception('Failed to update requisition');
+      }
+    } catch (e) {
+      throw Exception('Failed to update requisition: $e');
+    }
+  }
+
+  Future<void> deleteRequisition(int id) async {
+    try {
+      final response = await _dio.delete('/requisitions/$id');
+      if (response.statusCode != 204) {
+        throw Exception('Failed to delete requisition');
+      }
+    } catch (e) {
+      throw Exception('Failed to delete requisition: $e');
+    }
+  }
+
+  // Admin listing methods
+  Future<List<Requisition>> getAllRequisitions() async {
+    try {
+      final response = await _dio.get('/requisitions/all');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => Requisition.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load all requisitions');
+      }
+    } catch (e) {
+      throw Exception('Failed to load all requisitions: $e');
+    }
+  }
+
+  Future<List<PurchaseOrder>> getAllPurchaseOrders() async {
+    try {
+      final response = await _dio.get('/purchase-orders/all');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => PurchaseOrder.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load all purchase orders');
+      }
+    } catch (e) {
+      throw Exception('Failed to load all purchase orders: $e');
+    }
   }
 }

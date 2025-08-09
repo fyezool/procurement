@@ -62,6 +62,8 @@ func getAdminMenu() []models.NavigationItem {
 		{Title: "Reports", Path: "/reports", Icon: "assessment"},
 		{Title: "Administration", Path: "/admin", Icon: "settings", SubItems: []models.NavigationSubItem{
 			{Title: "User Management", Path: "/admin/users"},
+			{Title: "All Requisitions", Path: "/admin/requisitions"},
+			{Title: "All Purchase Orders", Path: "/admin/purchase-orders"},
 			{Title: "System Settings", Path: "/admin/settings"},
 		}},
 	}
