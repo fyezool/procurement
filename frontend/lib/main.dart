@@ -11,10 +11,10 @@ import 'screens/procurement/requisitions_screen.dart';
 import 'screens/procurement/create_requisition_screen.dart';
 import 'screens/procurement/my_requisitions_screen.dart';
 import 'screens/procurement/pending_requisitions_screen.dart';
-import 'screens/procurement/purchase_orders_screen.dart';
+import 'screens/purchase_orders_screen.dart';
 import 'screens/procurement/create_purchase_order_screen.dart';
 import 'screens/procurement/approvals_screen.dart';
-import 'screens/vendors/vendor_directory_screen.dart';
+import 'screens/vendors_screen.dart';
 import 'screens/vendors/add_vendor_screen.dart';
 import 'screens/vendors/vendor_performance_screen.dart';
 import 'screens/vendors/vendor_communications_screen.dart';
@@ -88,7 +88,7 @@ class ProcurementApp extends StatelessWidget {
                   // Vendor Routes
                   GoRoute(
                     path: '/vendors',
-                    builder: (context, state) => const VendorDirectoryScreen(),
+                    builder: (context, state) => const VendorsScreen(),
                   ),
                   // Reports Routes
                   GoRoute(
