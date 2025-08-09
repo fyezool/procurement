@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../models/user.dart';
 import '../models/requisition.dart';
 import '../models/purchase_order.dart';
+import '../models/vendor.dart';
 import 'web_storage_service.dart';
 
 class ApiService {
@@ -129,6 +130,43 @@ class ApiService {
     }
   }
 
+  // Approval methods
+  Future<List<Requisition>> getPendingRequisitions() async {
+    try {
+      final response = await _dio.get('/requisitions/pending');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => Requisition.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load pending requisitions');
+      }
+    } catch (e) {
+      throw Exception('Failed to load pending requisitions: $e');
+    }
+  }
+
+  Future<void> approveRequisition(int id) async {
+    try {
+      final response = await _dio.post('/requisitions/$id/approve');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to approve requisition');
+      }
+    } catch (e) {
+      throw Exception('Failed to approve requisition: $e');
+    }
+  }
+
+  Future<void> rejectRequisition(int id) async {
+    try {
+      final response = await _dio.post('/requisitions/$id/reject');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to reject requisition');
+      }
+    } catch (e) {
+      throw Exception('Failed to reject requisition: $e');
+    }
+  }
+
   // Admin listing methods
   Future<List<Requisition>> getAllRequisitions() async {
     try {
@@ -155,6 +193,34 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Failed to load all purchase orders: $e');
+    }
+  }
+
+  // Vendor methods
+  Future<List<Vendor>> getVendors() async {
+    try {
+      final response = await _dio.get('/vendors');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => Vendor.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load vendors');
+      }
+    } catch (e) {
+      throw Exception('Failed to load vendors: $e');
+    }
+  }
+
+  Future<Vendor> createVendor(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/vendors', data: data);
+      if (response.statusCode == 201) {
+        return Vendor.fromJson(response.data);
+      } else {
+        throw Exception('Failed to create vendor');
+      }
+    } catch (e) {
+      throw Exception('Failed to create vendor: $e');
     }
   }
 }
