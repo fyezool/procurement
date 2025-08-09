@@ -26,6 +26,14 @@ func (m *MockPurchaseOrderRepository) GetPurchaseOrderByID(id int) (*models.Purc
 	}
 	return args.Get(0).(*models.PurchaseOrder), args.Error(1)
 }
+
+func (m *MockPurchaseOrderRepository) GetAllPurchaseOrders() ([]models.PurchaseOrder, error) {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.PurchaseOrder), args.Error(1)
+}
 func (m *MockPurchaseOrderRepository) GetNextPONumber() (string, error) {
 	args := m.Called()
 	return args.String(0), args.Error(1)

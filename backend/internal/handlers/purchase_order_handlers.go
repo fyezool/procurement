@@ -42,6 +42,17 @@ func (h *PurchaseOrderHandler) GetPurchaseOrderByID(w http.ResponseWriter, r *ht
 	json.NewEncoder(w).Encode(po)
 }
 
+func (h *PurchaseOrderHandler) GetAllPurchaseOrders(w http.ResponseWriter, r *http.Request) {
+	pos, err := h.service.GetAllPurchaseOrders()
+	if err != nil {
+		http.Error(w, "Failed to retrieve purchase orders", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(pos)
+}
+
 func (h *PurchaseOrderHandler) GetPurchaseOrderPDF(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])

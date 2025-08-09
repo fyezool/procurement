@@ -24,6 +24,14 @@ This directory contains the Go backend for the Procurement System.
     *   Run the server: `go run ./cmd/main.go`
     *   The server will start on the port specified in your `.env` file (defaults to 8080).
 
+## Database Seeding
+
+To populate the database with sample data for development and testing, you can run the seeder script. This will clean all existing data and create a set of users, vendors, and requisitions.
+
+```bash
+go run ./cmd/seeder/main.go
+```
+
 ## API Endpoints
 
 All endpoints are prefixed with `/api`.

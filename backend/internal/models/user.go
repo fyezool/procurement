@@ -26,3 +26,10 @@ type LoginPayload struct {
 type LoginResponse struct {
 	Token string `json:"token"`
 }
+
+// UpdateUserPayload defines the structure for updating a user's details.
+// Admins can update a user's name and role. Email is not updatable for simplicity.
+type UpdateUserPayload struct {
+	Name string `json:"name" validate:"required"`
+	Role string `json:"role" validate:"required,oneof=Employee Admin 'Procurement Officer' Approver Vendor"`
+}

@@ -26,6 +26,8 @@ import 'screens/admin/admin_screen.dart';
 import 'screens/admin/user_management_screen.dart';
 import 'screens/admin/role_management_screen.dart';
 import 'screens/admin/system_settings_screen.dart';
+import 'screens/admin/all_requisitions_screen.dart';
+import 'screens/admin/all_purchase_orders_screen.dart';
 
 // Services
 import 'services/auth_service.dart';
@@ -103,6 +105,14 @@ class ProcurementApp extends StatelessWidget {
                    GoRoute(
                     path: '/admin/users',
                     builder: (context, state) => const UserManagementScreen(),
+                  ),
+                  GoRoute(
+                    path: '/admin/requisitions',
+                    builder: (context, state) => const AllRequisitionsScreen(),
+                  ),
+                  GoRoute(
+                    path: '/admin/purchase-orders',
+                    builder: (context, state) => const AllPurchaseOrdersScreen(),
                   ),
                    GoRoute(
                     path: '/admin/settings',

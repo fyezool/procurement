@@ -14,6 +14,7 @@ var (
 type PurchaseOrderRepository interface {
 	CreatePurchaseOrder(po *models.PurchaseOrder) error
 	GetPurchaseOrderByID(id int) (*models.PurchaseOrder, error)
+	GetAllPurchaseOrders() ([]models.PurchaseOrder, error)
 	GetNextPONumber() (string, error)
 	GetPDFData(poID int) (*models.PDFData, error)
 }
@@ -53,6 +54,31 @@ func (r *postgresPurchaseOrderRepository) GetPurchaseOrderByID(id int) (*models.
 		return nil, err
 	}
 	return po, nil
+}
+
+func (r *postgresPurchaseOrderRepository) GetAllPurchaseOrders() ([]models.PurchaseOrder, error) {
+	query := `
+		SELECT id, po_number, requisition_id, vendor_id, order_date, created_at
+		FROM purchase_orders
+		ORDER BY order_date DESC
+	`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var purchaseOrders []models.PurchaseOrder
+	for rows.Next() {
+		var po models.PurchaseOrder
+		if err := rows.Scan(
+			&po.ID, &po.PONumber, &po.RequisitionID, &po.VendorID, &po.OrderDate, &po.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		purchaseOrders = append(purchaseOrders, po)
+	}
+	return purchaseOrders, nil
 }
 
 func (r *postgresPurchaseOrderRepository) GetNextPONumber() (string, error) {

@@ -11,6 +11,7 @@ import (
 type PurchaseOrderService interface {
 	CreatePurchaseOrderFromRequisition(requisition *models.Requisition) (*models.PurchaseOrder, error)
 	GetPurchaseOrderByID(id int) (*models.PurchaseOrder, error)
+	GetAllPurchaseOrders() ([]models.PurchaseOrder, error)
 	GeneratePurchaseOrderPDF(poID int) (*bytes.Buffer, error)
 }
 
@@ -55,6 +56,10 @@ func (s *purchaseOrderService) CreatePurchaseOrderFromRequisition(requisition *m
 
 func (s *purchaseOrderService) GetPurchaseOrderByID(id int) (*models.PurchaseOrder, error) {
 	return s.poRepo.GetPurchaseOrderByID(id)
+}
+
+func (s *purchaseOrderService) GetAllPurchaseOrders() ([]models.PurchaseOrder, error) {
+	return s.poRepo.GetAllPurchaseOrders()
 }
 
 func (s *purchaseOrderService) GeneratePurchaseOrderPDF(poID int) (*bytes.Buffer, error) {

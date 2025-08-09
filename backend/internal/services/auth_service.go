@@ -41,12 +41,14 @@ func (s *authService) Register(payload models.RegistrationPayload) (*models.User
 		Role:           payload.Role,
 	}
 
-	err = s.userRepo.CreateUser(user)
+	createdUser, err := s.userRepo.CreateUser(user)
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	// Do not expose password hash in the response
+	createdUser.HashedPassword = ""
+	return createdUser, nil
 }
 
 func (s *authService) Login(payload models.LoginPayload) (string, error) {

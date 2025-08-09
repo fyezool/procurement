@@ -15,15 +15,22 @@ type MockRequisitionRepository struct {
 	mock.Mock
 }
 
-func (m *MockRequisitionRepository) CreateRequisition(requisition *models.Requisition) error {
+func (m *MockRequisitionRepository) CreateRequisition(requisition *models.Requisition) (*models.Requisition, error) {
 	args := m.Called(requisition)
-	return args.Error(0)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Requisition), args.Error(1)
 }
 func (m *MockRequisitionRepository) GetRequisitionsByRequesterID(requesterID int) ([]models.Requisition, error) {
 	args := m.Called(requesterID)
 	return args.Get(0).([]models.Requisition), args.Error(1)
 }
 func (m *MockRequisitionRepository) GetPendingRequisitions() ([]models.Requisition, error) {
+	args := m.Called()
+	return args.Get(0).([]models.Requisition), args.Error(1)
+}
+func (m *MockRequisitionRepository) GetAllRequisitions() ([]models.Requisition, error) {
 	args := m.Called()
 	return args.Get(0).([]models.Requisition), args.Error(1)
 }
@@ -38,6 +45,15 @@ func (m *MockRequisitionRepository) UpdateRequisitionStatus(id int, status strin
 	args := m.Called(id, status)
 	return args.Error(0)
 }
+func (m *MockRequisitionRepository) UpdateRequisition(req *models.Requisition) error {
+	args := m.Called(req)
+	return args.Error(0)
+}
+func (m *MockRequisitionRepository) DeleteRequisition(id int) error {
+	args := m.Called(id)
+	return args.Error(0)
+}
+
 
 // MockPurchaseOrderService is a mock type for the PurchaseOrderService
 type MockPurchaseOrderService struct {
@@ -60,6 +76,11 @@ func (m *MockPurchaseOrderService) GetPurchaseOrderByID(id int) (*models.Purchas
 	return args.Get(0).(*models.PurchaseOrder), args.Error(1)
 }
 
+func (m *MockPurchaseOrderService) GetAllPurchaseOrders() ([]models.PurchaseOrder, error) {
+	args := m.Called()
+	return args.Get(0).([]models.PurchaseOrder), args.Error(1)
+}
+
 func (m *MockPurchaseOrderService) GeneratePurchaseOrderPDF(poID int) (*bytes.Buffer, error) {
 	args := m.Called(poID)
 	if args.Get(0) == nil {
@@ -78,7 +99,12 @@ func TestRequisitionService(t *testing.T) {
 			Quantity:        10,
 			EstimatedPrice:  100,
 		}
-		mockReqRepo.On("CreateRequisition", mock.AnythingOfType("*models.Requisition")).Return(nil).Once()
+
+		// We expect CreateRequisition to be called and we return a mock requisition.
+		mockReqRepo.On("CreateRequisition", mock.AnythingOfType("*models.Requisition")).Return(&models.Requisition{
+			Status:     "Pending",
+			TotalPrice: 1000,
+		}, nil).Once()
 
 		req, err := requisitionService.CreateRequisition(payload, 1)
 		assert.NoError(t, err)
