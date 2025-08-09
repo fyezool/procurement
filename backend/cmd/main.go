@@ -80,6 +80,9 @@ func main() {
 	navRoutes := api.PathPrefix("/navigation").Subrouter()
 	navRoutes.Use(middleware.AuthMiddleware)
 	navRoutes.HandleFunc("/menu", navigationHandler.GetMenu).Methods("GET")
+	navRoutes.HandleFunc("/breadcrumbs", navigationHandler.GetBreadcrumbs).Methods("GET")
+
+
 
 	// Vendor routes (Admin only)
 	vendorRoutes := api.PathPrefix("/vendors").Subrouter()

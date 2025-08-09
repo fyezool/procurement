@@ -2,10 +2,14 @@ package services
 
 import (
 	"procurement-system/internal/models"
+	"strings"
+
 )
 
 type NavigationService interface {
 	GetMenuForRole(role string) []models.NavigationItem
+	GetBreadcrumbsForPath(role, path string) []models.BreadcrumbItem
+
 }
 
 type navigationService struct{}
@@ -27,6 +31,26 @@ func (s *navigationService) GetMenuForRole(role string) []models.NavigationItem 
 	default: // Employee
 		return getEmployeeMenu()
 	}
+}
+
+
+func (s *navigationService) GetBreadcrumbsForPath(role, path string) []models.BreadcrumbItem {
+	menu := s.GetMenuForRole(role)
+	var breadcrumbs []models.BreadcrumbItem
+
+	for _, item := range menu {
+		if strings.HasPrefix(path, item.Path) {
+			breadcrumbs = append(breadcrumbs, models.BreadcrumbItem{Title: item.Title, Path: item.Path})
+			for _, subItem := range item.SubItems {
+				if path == subItem.Path {
+					breadcrumbs = append(breadcrumbs, models.BreadcrumbItem{Title: subItem.Title, Path: subItem.Path})
+					return breadcrumbs
+				}
+			}
+			return breadcrumbs
+		}
+	}
+	return breadcrumbs
 }
 
 func getAdminMenu() []models.NavigationItem {
