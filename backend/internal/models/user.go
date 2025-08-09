@@ -13,7 +13,7 @@ type RegistrationPayload struct {
 	Name     string `json:"name" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8"`
-	Role     string `json:"role" validate:"required,oneof=Employee Admin"`
+	Role     string `json:"role" validate:"required,oneof=Employee Admin 'Procurement Officer' Approver Vendor"`
 }
 
 // LoginPayload defines the structure for user login request

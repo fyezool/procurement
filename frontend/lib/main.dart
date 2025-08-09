@@ -5,6 +5,7 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/vendors_screen.dart';
 import 'screens/purchase_orders_screen.dart';
+import 'screens/app_shell.dart'; // Import the new AppShell
 import 'services/auth_service.dart';
 import 'services/api_service.dart';
 
@@ -25,31 +26,44 @@ class ProcurementApp extends StatelessWidget {
       child: Consumer<AuthService>(
         builder: (context, authService, child) {
           final router = GoRouter(
-            initialLocation: authService.isAuthenticated ? '/dashboard' : '/login',
+            refreshListenable: authService,
+            initialLocation: '/login',
             routes: [
               GoRoute(
                 path: '/login',
                 builder: (context, state) => const LoginScreen(),
               ),
-              GoRoute(
-                path: '/dashboard',
-                builder: (context, state) => const DashboardScreen(),
-              ),
-              GoRoute(
-                path: '/vendors',
-                builder: (context, state) => const VendorsScreen(),
-              ),
-              GoRoute(
-                path: '/purchase-orders',
-                builder: (context, state) => const PurchaseOrdersScreen(),
+              ShellRoute(
+                builder: (context, state, child) {
+                  return AppShell(child: child);
+                },
+                routes: [
+                  GoRoute(
+                    path: '/dashboard',
+                    builder: (context, state) => const DashboardScreen(),
+                  ),
+                  GoRoute(
+                    path: '/vendors',
+                    builder: (context, state) => const VendorsScreen(),
+                  ),
+                  GoRoute(
+                    path: '/purchase-orders',
+                    builder: (context, state) => const PurchaseOrdersScreen(),
+                  ),
+                  // Add other routes that should have the shell here
+                ],
               ),
             ],
             redirect: (context, state) {
               final isAuthenticated = authService.isAuthenticated;
               final isLoggingIn = state.uri.path == '/login';
 
-              if (!isAuthenticated && !isLoggingIn) return '/login';
-              if (isAuthenticated && isLoggingIn) return '/dashboard';
+              if (!isAuthenticated && !isLoggingIn) {
+                return '/login';
+              }
+              if (isAuthenticated && isLoggingIn) {
+                return '/dashboard';
+              }
               return null;
             },
           );
