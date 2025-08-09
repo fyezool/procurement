@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/requisition.dart';
 import '../../services/api_service.dart';
+import '../../widgets/edit_requisition_dialog.dart';
 
 class MyRequisitionsScreen extends StatefulWidget {
   const MyRequisitionsScreen({Key? key}) : super(key: key);
@@ -11,18 +12,96 @@ class MyRequisitionsScreen extends StatefulWidget {
 
 class _MyRequisitionsScreenState extends State<MyRequisitionsScreen> {
   late Future<List<Requisition>> _requisitionsFuture;
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
-    _requisitionsFuture = ApiService().getMyRequisitions();
+    _requisitionsFuture = _apiService.getMyRequisitions();
   }
 
   void _refreshRequisitions() {
     setState(() {
-      _requisitionsFuture = ApiService().getMyRequisitions();
+      _requisitionsFuture = _apiService.getMyRequisitions();
     });
   }
+
+  void _showEditRequisitionDialog(Requisition requisition) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return EditRequisitionDialog(
+          requisition: requisition,
+          onSave: (updatedData) async {
+            try {
+              await _apiService.updateRequisition(requisition.id, updatedData);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Requisition updated successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              _refreshRequisitions();
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to update requisition: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmationDialog(Requisition requisition) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Requisition'),
+          content: Text('Are you sure you want to delete this requisition: "${requisition.itemDescription}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () async {
+                try {
+                  await _apiService.deleteRequisition(requisition.id);
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Requisition deleted successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  _refreshRequisitions();
+                } catch (e) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete requisition: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -72,16 +151,12 @@ class _MyRequisitionsScreenState extends State<MyRequisitionsScreen> {
                         if (isPending)
                           IconButton(
                             icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              // TODO: Implement edit requisition dialog
-                            },
+                            onPressed: () => _showEditRequisitionDialog(req),
                           ),
                         if (isPending)
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              // TODO: Implement delete requisition confirmation
-                            },
+                            onPressed: () => _showDeleteConfirmationDialog(req),
                           ),
                       ],
                     )),
