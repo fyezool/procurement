@@ -67,6 +67,15 @@ All endpoints are prefixed with `/api`.
         }
         ```
 
+### User Management (Admin Only)
+
+*All user management routes require a valid JWT from an "Admin" user.*
+
+*   **`GET /users`**: Returns a list of all users.
+*   **`GET /users/{id}`**: Returns a single user by ID.
+*   **`PUT /users/{id}`**: Updates a user's name and role.
+*   **`DELETE /users/{id}`**: Deletes a user.
+
 ### Vendor Management (Admin Only)
 
 *All vendor routes require a valid JWT from an "Admin" user.*
@@ -96,7 +105,10 @@ All endpoints are prefixed with `/api`.
     *   **Response:** `201 Created` with the new requisition object.
 
 *   **`GET /requisitions/my`**: Returns a list of PRs created by the logged-in user.
+*   **`PUT /requisitions/{id}`**: Updates a requisition (if status is "Pending" and user is the requester).
+*   **`DELETE /requisitions/{id}`**: Deletes a requisition (if status is "Pending" and user is the requester).
 *   **`GET /requisitions/pending`** (Admin Only): Returns all PRs with "Pending" status.
+*   **`GET /requisitions/all`** (Admin Only): Returns a list of all requisitions.
 *   **`POST /requisitions/{id}/approve`** (Admin Only): Approves a PR and creates a Purchase Order.
 *   **`POST /requisitions/{id}/reject`** (Admin Only): Rejects a PR.
 
@@ -104,5 +116,6 @@ All endpoints are prefixed with `/api`.
 
 *All purchase order routes require authentication.*
 
+*   **`GET /purchase-orders/all`** (Admin Only): Returns a list of all purchase orders.
 *   **`GET /purchase-orders/{id}`**: Returns a purchase order by ID.
 *   **`GET /purchase-orders/{id}/pdf`**: Generates and returns a PDF of the purchase order.

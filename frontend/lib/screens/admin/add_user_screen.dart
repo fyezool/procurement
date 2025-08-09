@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
-import '../../services/api_service.dart';
 import 'package:go_router/go_router.dart';
+import '../../services/api_service.dart';
 
-class AddVendorScreen extends StatefulWidget {
-  const AddVendorScreen({Key? key}) : super(key: key);
+class AddUserScreen extends StatefulWidget {
+  const AddUserScreen({Key? key}) : super(key: key);
 
   @override
-  _AddVendorScreenState createState() => _AddVendorScreenState();
+  _AddUserScreenState createState() => _AddUserScreenState();
 }
 
-class _AddVendorScreenState extends State<AddVendorScreen> {
+class _AddUserScreenState extends State<AddUserScreen> {
   final _formKey = GlobalKey<FormState>();
   final _apiService = ApiService();
   bool _isLoading = false;
 
   final _nameController = TextEditingController();
-  final _contactPersonController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String _selectedRole = 'Employee'; // Default role
+
+  final List<String> _roles = ['Employee', 'Admin', 'Procurement Officer', 'Approver', 'Vendor'];
 
   @override
   void dispose() {
     _nameController.dispose();
-    _contactPersonController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -37,27 +36,28 @@ class _AddVendorScreenState extends State<AddVendorScreen> {
       });
 
       try {
-        final vendorData = {
+        final userData = {
           'name': _nameController.text,
-          'contact_person': _contactPersonController.text,
           'email': _emailController.text,
-          'phone': _phoneController.text,
-          'address': _addressController.text,
+          'password': _passwordController.text,
+          'role': _selectedRole,
         };
-        await _apiService.createVendor(vendorData);
+        await _apiService.registerUser(userData);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Vendor created successfully'), backgroundColor: Colors.green),
+            const SnackBar(
+                content: Text('User created successfully'),
+                backgroundColor: Colors.green),
           );
-          // Go back to the vendor list screen
           context.pop();
         }
-
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to create vendor: $e'), backgroundColor: Colors.red),
+            SnackBar(
+                content: Text('Failed to create user: $e'),
+                backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -74,7 +74,7 @@ class _AddVendorScreenState extends State<AddVendorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Vendor'),
+        title: const Text('Add New User'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -95,16 +95,11 @@ class _AddVendorScreenState extends State<AddVendorScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _contactPersonController,
-                  decoration: const InputDecoration(labelText: 'Contact Person', border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value != null && value.isNotEmpty && !value.contains('@')) {
+                    if (value == null || value.isEmpty || !value.contains('@')) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -112,15 +107,33 @@ class _AddVendorScreenState extends State<AddVendorScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone', border: OutlineInputBorder()),
-                  keyboardType: TextInputType.phone,
+                  controller: _passwordController,
+                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || value.length < 8) {
+                      return 'Password must be at least 8 characters long';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _addressController,
-                  decoration: const InputDecoration(labelText: 'Address', border: OutlineInputBorder()),
-                  maxLines: 3,
+                DropdownButtonFormField<String>(
+                  value: _selectedRole,
+                  decoration: const InputDecoration(labelText: 'Role', border: OutlineInputBorder()),
+                  items: _roles.map((String role) {
+                    return DropdownMenuItem<String>(
+                      value: role,
+                      child: Text(role),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedRole = newValue;
+                      });
+                    }
+                  },
                 ),
                 const SizedBox(height: 20),
                 _isLoading
@@ -130,7 +143,7 @@ class _AddVendorScreenState extends State<AddVendorScreen> {
                           minimumSize: const Size(double.infinity, 50),
                         ),
                         onPressed: _submit,
-                        child: const Text('Save Vendor'),
+                        child: const Text('Save User'),
                       ),
               ],
             ),

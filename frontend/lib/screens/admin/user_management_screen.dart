@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
 import '../../widgets/edit_user_dialog.dart';
@@ -162,6 +163,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Navigate to the add user screen and wait for a result.
+          // If the result is true, it means a user was added, so refresh the list.
+          final result = await context.push<bool>('/admin/users/create');
+          if (result == true) {
+            _refreshUsers();
+          }
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Add User',
       ),
     );
   }

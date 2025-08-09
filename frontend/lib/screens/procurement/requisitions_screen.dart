@@ -53,15 +53,7 @@ class RequisitionsScreen extends StatelessWidget {
                   icon: const Icon(Icons.add_circle_outline),
                   label: const Text('Create New Requisition'),
                   onPressed: () {
-                    // TODO: Navigate to the create requisition screen
-                    // For now, we show a snackbar as the create screen is not yet implemented.
-                    // context.go('/procurement/requisitions/create');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Create Requisition page not implemented yet.'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
+            context.go('/procurement/requisitions/create');
                   },
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(280, 50),

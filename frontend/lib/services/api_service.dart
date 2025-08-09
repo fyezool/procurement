@@ -92,6 +92,19 @@ class ApiService {
     }
   }
 
+  Future<User> registerUser(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/register', data: data);
+      if (response.statusCode == 201) {
+        return User.fromJson(response.data);
+      } else {
+        throw Exception('Failed to register user');
+      }
+    } catch (e) {
+      throw Exception('Failed to register user: $e');
+    }
+  }
+
   Future<List<Requisition>> getMyRequisitions() async {
     try {
       final response = await _dio.get('/requisitions/my');
@@ -103,6 +116,19 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Failed to load requisitions: $e');
+    }
+  }
+
+  Future<Requisition> createRequisition(Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.post('/requisitions', data: data);
+      if (response.statusCode == 201) {
+        return Requisition.fromJson(response.data);
+      } else {
+        throw Exception('Failed to create requisition');
+      }
+    } catch (e) {
+      throw Exception('Failed to create requisition: $e');
     }
   }
 
@@ -221,6 +247,30 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Failed to create vendor: $e');
+    }
+  }
+
+  Future<Vendor> updateVendor(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/vendors/$id', data: data);
+      if (response.statusCode == 200) {
+        return Vendor.fromJson(response.data);
+      } else {
+        throw Exception('Failed to update vendor');
+      }
+    } catch (e) {
+      throw Exception('Failed to update vendor: $e');
+    }
+  }
+
+  Future<void> deleteVendor(int id) async {
+    try {
+      final response = await _dio.delete('/vendors/$id');
+      if (response.statusCode != 204) {
+        throw Exception('Failed to delete vendor');
+      }
+    } catch (e) {
+      throw Exception('Failed to delete vendor: $e');
     }
   }
 }

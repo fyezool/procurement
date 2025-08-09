@@ -4,12 +4,13 @@ This is a comprehensive Procurement Management System built from scratch, design
 
 ## 🌟 Features
 
-- **Full CRUD Operations:** Manage Vendors, Purchase Orders, Products, Invoices, and Users.
-- **Role-Based Access Control (RBAC):** Pre-defined roles (Admin, Procurement Officer, Approver) to control access to features.
+- **Full CRUD for Core Modules:** Admins can manage Users and Vendors. Employees can manage their own Purchase Requisitions.
+- **Role-Based Access Control (RBAC):** Simple but effective roles (Admin, Employee, etc.) to control access to features.
 - **Secure Authentication:** JWT-based authentication with password hashing (bcrypt).
-- **PDF Invoice Generation:** Dynamically generate and download PDF invoices.
-- **RESTful API:** A well-structured and documented RESTful API for seamless integration.
-- **Complete Business Workflow:** From Purchase Request to Payment, the system models a real-world procurement process.
+- **Purchase Requisition Workflow:** Create, update, and delete requisitions. Admins can approve or reject them.
+- **Automatic Purchase Order (PO) Generation:** POs are automatically created when a requisition is approved.
+- **PDF Generation:** Download a PDF representation of a Purchase Order.
+- **RESTful API:** A well-structured and documented RESTful API.
 
 ## 🛠️ Prerequisites
 
