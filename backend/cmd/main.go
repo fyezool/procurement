@@ -57,12 +57,14 @@ func main() {
 	pdfService := services.NewPDFService()
 	poService := services.NewPurchaseOrderService(poRepo, vendorRepo, pdfService)
 	requisitionService := services.NewRequisitionService(requisitionRepo, poService)
+	navigationService := services.NewNavigationService()
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	vendorHandler := handlers.NewVendorHandler(vendorService)
 	requisitionHandler := handlers.NewRequisitionHandler(requisitionService)
 	poHandler := handlers.NewPurchaseOrderHandler(poService)
+	navigationHandler := handlers.NewNavigationHandler(navigationService)
 
 	// Create router
 	r := mux.NewRouter()
@@ -73,6 +75,11 @@ func main() {
 	// Auth routes
 	api.HandleFunc("/register", authHandler.Register).Methods("POST")
 	api.HandleFunc("/login", authHandler.Login).Methods("POST")
+
+	// Navigation routes
+	navRoutes := api.PathPrefix("/navigation").Subrouter()
+	navRoutes.Use(middleware.AuthMiddleware)
+	navRoutes.HandleFunc("/menu", navigationHandler.GetMenu).Methods("GET")
 
 	// Vendor routes (Admin only)
 	vendorRoutes := api.PathPrefix("/vendors").Subrouter()
