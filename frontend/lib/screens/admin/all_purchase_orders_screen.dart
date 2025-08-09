@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/purchase_order.dart';
 import '../../services/api_service.dart';
+import '../../widgets/empty_state_widget.dart';
 
 class AllPurchaseOrdersScreen extends StatefulWidget {
   const AllPurchaseOrdersScreen({Key? key}) : super(key: key);
@@ -43,9 +44,17 @@ class _AllPurchaseOrdersScreenState extends State<AllPurchaseOrdersScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return EmptyStateWidget(
+              message: 'Failed to load purchase orders: ${snapshot.error}',
+              icon: Icons.error_outline,
+              onRetry: _refreshPOs,
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No purchase orders found.'));
+            return EmptyStateWidget(
+              message: 'No purchase orders found in the system.',
+              icon: Icons.receipt_long_outlined,
+              onRetry: _refreshPOs,
+            );
           }
 
           final pos = snapshot.data!;

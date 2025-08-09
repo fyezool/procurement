@@ -161,11 +161,8 @@ class _AppShellState extends State<AppShell> {
             title: const Text('Procurement System'),
             actions: [
               IconButton(
-                icon: Badge(
-                  label: Text('3'), // Static badge for now
-                  child: Icon(Icons.notifications),
-                ),
-                onPressed: () {},
+                icon: const Icon(Icons.notifications),
+                onPressed: () => context.go('/activity-log'),
               ),
               const SizedBox(width: 8),
               PopupMenuButton(
@@ -179,6 +176,8 @@ class _AppShellState extends State<AppShell> {
                 onSelected: (value) {
                   if (value == 'logout') {
                     authService.logout();
+                  } else if (value == 'profile') {
+                    context.go('/profile');
                   }
                 },
               ),

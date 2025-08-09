@@ -20,6 +20,7 @@ type UserRepository interface {
 	GetAllUsers() ([]models.User, error)
 	UpdateUser(user *models.User) error
 	DeleteUser(id int) error
+	UpdatePassword(userID int, newHashedPassword string) error
 }
 
 type postgresUserRepository struct {
@@ -52,6 +53,25 @@ func (r *postgresUserRepository) CreateUser(user *models.User) (*models.User, er
 	}
 
 	return user, nil
+}
+
+func (r *postgresUserRepository) UpdatePassword(userID int, newHashedPassword string) error {
+	query := `UPDATE users SET hashed_password = $1 WHERE id = $2`
+	result, err := r.db.Exec(query, newHashedPassword, userID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
 }
 
 func (r *postgresUserRepository) GetUserByID(id int) (*models.User, error) {

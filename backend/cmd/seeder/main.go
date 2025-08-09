@@ -59,9 +59,11 @@ func main() {
 	poRepo = repository.NewPostgresPurchaseOrderRepository(db)
 
 	// Initialize services (we need this for the approval logic)
+	activityLogRepo := repository.NewPostgresActivityLogRepository(db)
+	logService := services.NewActivityLogService(activityLogRepo)
 	pdfService := services.NewPDFService()
 	poService := services.NewPurchaseOrderService(poRepo, vendorRepo, pdfService)
-	requisitionService = services.NewRequisitionService(requisitionRepo, poService)
+	requisitionService = services.NewRequisitionService(requisitionRepo, poService, logService)
 
 	fmt.Println("Starting database seeding...")
 
@@ -172,7 +174,9 @@ func seedRequisitions(users []models.User, vendors []models.Vendor) {
 		// Approve the third requisition to trigger PO creation
 		if i == 2 {
 			fmt.Printf("Approving requisition ID %d to generate a Purchase Order...\n", createdReq.ID)
-			err := requisitionService.ApproveRequisition(createdReq.ID)
+			// We'll use the Admin User (ID: 1) to approve this in the seeder
+			adminID := 1
+			err := requisitionService.ApproveRequisition(createdReq.ID, adminID)
 			if err != nil {
 				log.Fatalf("Error approving requisition: %v", err)
 			}

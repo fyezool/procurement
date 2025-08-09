@@ -29,6 +29,8 @@ import 'screens/admin/system_settings_screen.dart';
 import 'screens/admin/all_requisitions_screen.dart';
 import 'screens/admin/all_purchase_orders_screen.dart';
 import 'screens/admin/add_user_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/activity_log_screen.dart';
 
 // Services
 import 'services/auth_service.dart';
@@ -66,6 +68,14 @@ class ProcurementApp extends StatelessWidget {
                   GoRoute(
                     path: '/dashboard',
                     builder: (context, state) => const DashboardScreen(),
+                  ),
+                  GoRoute(
+                    path: '/profile',
+                    builder: (context, state) => const ProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: '/activity-log',
+                    builder: (context, state) => const ActivityLogScreen(),
                   ),
                   // Procurement Routes
                   GoRoute(

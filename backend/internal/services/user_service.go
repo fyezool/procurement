@@ -1,8 +1,15 @@
 package services
 
 import (
+	"errors"
 	"procurement-system/internal/models"
 	"procurement-system/internal/repository"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrIncorrectPassword = errors.New("incorrect old password")
 )
 
 // UserService defines the interface for user management operations.
@@ -11,15 +18,18 @@ type UserService interface {
 	GetUserByID(id int) (*models.User, error)
 	UpdateUser(id int, payload models.UpdateUserPayload) (*models.User, error)
 	DeleteUser(id int) error
+	UpdateMyProfile(userID int, payload models.UpdateProfilePayload) (*models.User, error)
+	ChangeMyPassword(userID int, payload models.ChangePasswordPayload) error
 }
 
 type userService struct {
-	userRepo repository.UserRepository
+	userRepo   repository.UserRepository
+	logService ActivityLogService
 }
 
 // NewUserService creates a new instance of UserService.
-func NewUserService(userRepo repository.UserRepository) UserService {
-	return &userService{userRepo: userRepo}
+func NewUserService(userRepo repository.UserRepository, logService ActivityLogService) UserService {
+	return &userService{userRepo: userRepo, logService: logService}
 }
 
 // GetAllUsers retrieves all users.
@@ -53,8 +63,12 @@ func (s *userService) UpdateUser(id int, payload models.UpdateUserPayload) (*mod
 	// Persist changes to the database.
 	err = s.userRepo.UpdateUser(user)
 	if err != nil {
+		details := err.Error()
+		s.logService.Log(nil, "UPDATE_USER_FAILED", Ptr("user"), &id, "FAILED", &details)
 		return nil, err
 	}
+
+	s.logService.Log(nil, "UPDATE_USER_SUCCESS", Ptr("user"), &id, "SUCCESS", nil)
 
 	// Return the updated user model, ensuring password hash is not exposed.
 	user.HashedPassword = ""
@@ -63,5 +77,66 @@ func (s *userService) UpdateUser(id int, payload models.UpdateUserPayload) (*mod
 
 // DeleteUser deletes a user by their ID.
 func (s *userService) DeleteUser(id int) error {
-	return s.userRepo.DeleteUser(id)
+	err := s.userRepo.DeleteUser(id)
+	if err != nil {
+		details := err.Error()
+		s.logService.Log(nil, "DELETE_USER_FAILED", Ptr("user"), &id, "FAILED", &details)
+		return err
+	}
+	s.logService.Log(nil, "DELETE_USER_SUCCESS", Ptr("user"), &id, "SUCCESS", nil)
+	return nil
+}
+
+func (s *userService) UpdateMyProfile(userID int, payload models.UpdateProfilePayload) (*models.User, error) {
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Name = payload.Name
+
+	err = s.userRepo.UpdateUser(user)
+	if err != nil {
+		details := err.Error()
+		s.logService.Log(&userID, "UPDATE_PROFILE_FAILED", Ptr("user"), &userID, "FAILED", &details)
+		return nil, err
+	}
+
+	s.logService.Log(&userID, "UPDATE_PROFILE_SUCCESS", Ptr("user"), &userID, "SUCCESS", nil)
+	user.HashedPassword = ""
+	return user, nil
+}
+
+func (s *userService) ChangeMyPassword(userID int, payload models.ChangePasswordPayload) error {
+	user, err := s.userRepo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+
+	// Check if the old password is correct
+	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(payload.OldPassword))
+	if err != nil {
+		details := "Incorrect old password provided"
+		s.logService.Log(&userID, "CHANGE_PASSWORD_FAILED", Ptr("user"), &userID, "FAILED", &details)
+		return ErrIncorrectPassword
+	}
+
+	// Hash the new password
+	newHashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		details := err.Error()
+		s.logService.Log(&userID, "CHANGE_PASSWORD_FAILED", Ptr("user"), &userID, "FAILED", &details)
+		return err
+	}
+
+	// Update the password in the repository
+	err = s.userRepo.UpdatePassword(userID, string(newHashedPassword))
+	if err != nil {
+		details := err.Error()
+		s.logService.Log(&userID, "CHANGE_PASSWORD_FAILED", Ptr("user"), &userID, "FAILED", &details)
+		return err
+	}
+
+	s.logService.Log(&userID, "CHANGE_PASSWORD_SUCCESS", Ptr("user"), &userID, "SUCCESS", nil)
+	return nil
 }

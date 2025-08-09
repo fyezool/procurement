@@ -33,3 +33,14 @@ type UpdateUserPayload struct {
 	Name string `json:"name" validate:"required"`
 	Role string `json:"role" validate:"required,oneof=Employee Admin 'Procurement Officer' Approver Vendor"`
 }
+
+// UpdateProfilePayload defines the structure for updating a user's own name.
+type UpdateProfilePayload struct {
+	Name string `json:"name" validate:"required"`
+}
+
+// ChangePasswordPayload defines the structure for the change password request.
+type ChangePasswordPayload struct {
+	OldPassword string `json:"old_password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=8"`
+}

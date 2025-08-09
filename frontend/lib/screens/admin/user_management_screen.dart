@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/user.dart';
 import '../../services/api_service.dart';
 import '../../widgets/edit_user_dialog.dart';
+import '../../widgets/empty_state_widget.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({Key? key}) : super(key: key);
@@ -121,9 +122,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return EmptyStateWidget(
+              message: 'Failed to load users: ${snapshot.error}',
+              icon: Icons.error_outline,
+              onRetry: _refreshUsers,
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No users found.'));
+            return EmptyStateWidget(
+              message: 'No users found. Tap the button to add one.',
+              icon: Icons.people_outline,
+              onRetry: _refreshUsers,
+            );
           }
 
           final users = snapshot.data!;

@@ -43,12 +43,14 @@ func (m *MockVendorRepository) DeleteVendor(id int) error {
 
 func TestVendorService(t *testing.T) {
 	mockRepo := new(MockVendorRepository)
-	vendorService := NewVendorService(mockRepo)
+	mockLogService := new(MockActivityLogService)
+	vendorService := NewVendorService(mockRepo, mockLogService)
 
 	vendor := &models.Vendor{ID: 1, Name: "Test Vendor"}
 
 	t.Run("CreateVendor", func(t *testing.T) {
 		mockRepo.On("CreateVendor", vendor).Return(nil).Once()
+		mockLogService.On("Log", mock.Anything, "CREATE_VENDOR_SUCCESS", mock.Anything, mock.Anything, "SUCCESS", mock.Anything).Return()
 		err := vendorService.CreateVendor(vendor)
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
@@ -73,6 +75,7 @@ func TestVendorService(t *testing.T) {
 
 	t.Run("UpdateVendor", func(t *testing.T) {
 		mockRepo.On("UpdateVendor", vendor).Return(nil).Once()
+		mockLogService.On("Log", mock.Anything, "UPDATE_VENDOR_SUCCESS", mock.Anything, mock.Anything, "SUCCESS", mock.Anything).Return()
 		err := vendorService.UpdateVendor(vendor)
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
@@ -80,6 +83,7 @@ func TestVendorService(t *testing.T) {
 
 	t.Run("DeleteVendor", func(t *testing.T) {
 		mockRepo.On("DeleteVendor", 1).Return(nil).Once()
+		mockLogService.On("Log", mock.Anything, "DELETE_VENDOR_SUCCESS", mock.Anything, mock.Anything, "SUCCESS", mock.Anything).Return()
 		err := vendorService.DeleteVendor(1)
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)

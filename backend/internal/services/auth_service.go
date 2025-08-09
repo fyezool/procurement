@@ -21,11 +21,12 @@ type AuthService interface {
 }
 
 type authService struct {
-	userRepo repository.UserRepository
+	userRepo    repository.UserRepository
+	logService  ActivityLogService
 }
 
-func NewAuthService(userRepo repository.UserRepository) AuthService {
-	return &authService{userRepo: userRepo}
+func NewAuthService(userRepo repository.UserRepository, logService ActivityLogService) AuthService {
+	return &authService{userRepo: userRepo, logService: logService}
 }
 
 func (s *authService) Register(payload models.RegistrationPayload) (*models.User, error) {
@@ -43,8 +44,13 @@ func (s *authService) Register(payload models.RegistrationPayload) (*models.User
 
 	createdUser, err := s.userRepo.CreateUser(user)
 	if err != nil {
+		details := err.Error()
+		s.logService.Log(nil, "REGISTER_USER_FAILED", nil, nil, "FAILED", &details)
 		return nil, err
 	}
+
+	// Log successful registration
+	s.logService.Log(&createdUser.ID, "REGISTER_USER_SUCCESS", Ptr("user"), &createdUser.ID, "SUCCESS", nil)
 
 	// Do not expose password hash in the response
 	createdUser.HashedPassword = ""
@@ -54,18 +60,32 @@ func (s *authService) Register(payload models.RegistrationPayload) (*models.User
 func (s *authService) Login(payload models.LoginPayload) (string, error) {
 	user, err := s.userRepo.GetUserByEmail(payload.Email)
 	if err != nil {
+		var details string
 		if errors.Is(err, repository.ErrUserNotFound) {
+			details = "User not found for email: " + payload.Email
+			s.logService.Log(nil, "LOGIN_FAILED", Ptr("user"), nil, "FAILED", &details)
 			return "", ErrInvalidCredentials
 		}
+		// Generic database error
+		details = err.Error()
+		s.logService.Log(nil, "LOGIN_FAILED_DB_ERROR", nil, nil, "FAILED", &details)
 		return "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(payload.Password))
 	if err != nil {
+		details := "Invalid password for user: " + payload.Email
+		s.logService.Log(&user.ID, "LOGIN_FAILED", Ptr("user"), &user.ID, "FAILED", &details)
 		return "", ErrInvalidCredentials
 	}
 
+	s.logService.Log(&user.ID, "LOGIN_SUCCESS", Ptr("user"), &user.ID, "SUCCESS", nil)
 	return s.generateJWT(user)
+}
+
+// Ptr is a helper function to get a pointer to a string.
+func Ptr(s string) *string {
+	return &s
 }
 
 func (s *authService) generateJWT(user *models.User) (string, error) {

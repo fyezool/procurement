@@ -42,3 +42,15 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     order_date DATE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Activity Logs Table
+CREATE TABLE IF NOT EXISTS activity_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    action VARCHAR(255) NOT NULL,
+    target_type VARCHAR(255),
+    target_id INTEGER,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('SUCCESS', 'FAILED')),
+    details TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

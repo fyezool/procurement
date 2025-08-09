@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/requisition.dart';
 import '../../services/api_service.dart';
+import '../../widgets/empty_state_widget.dart';
 
 class ApprovalsScreen extends StatefulWidget {
   const ApprovalsScreen({Key? key}) : super(key: key);
@@ -71,9 +72,17 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return EmptyStateWidget(
+              message: 'Failed to load pending requisitions: ${snapshot.error}',
+              icon: Icons.error_outline,
+              onRetry: _refreshPendingRequisitions,
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No pending requisitions found.'));
+            return EmptyStateWidget(
+              message: 'There are no requisitions waiting for approval.',
+              icon: Icons.check_circle_outline,
+              onRetry: _refreshPendingRequisitions,
+            );
           }
 
           final requisitions = snapshot.data!;
