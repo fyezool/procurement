@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import '../models/navigation_item.dart';
 import '../widgets/breadcrumbs.dart';
 
+
 class AppShell extends StatefulWidget {
   final Widget child;
 
@@ -20,6 +21,8 @@ class _AppShellState extends State<AppShell> {
   List<NavigationItem> _filteredMenuItems = [];
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = true;
+
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _AppShellState extends State<AppShell> {
     _searchController.removeListener(_filterMenu);
     _searchController.dispose();
     super.dispose();
+
   }
 
   Future<void> _fetchMenu() async {
@@ -42,6 +46,7 @@ class _AppShellState extends State<AppShell> {
       setState(() {
         _menuItems = menuData.map((item) => NavigationItem.fromJson(item)).toList();
         _filteredMenuItems = _menuItems;
+
         _isLoading = false;
       });
     } catch (e) {
@@ -70,6 +75,10 @@ class _AppShellState extends State<AppShell> {
     setState(() {
       _filteredMenuItems = filtered;
     });
+  }
+
+      // Handle error, maybe show a snackbar
+    }
   }
 
   @override
@@ -107,12 +116,14 @@ class _AppShellState extends State<AppShell> {
             onSelected: (value) {
               if (value == 'logout') {
                 authService.logout();
+
               }
             },
           ),
           const SizedBox(width: 16),
         ],
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // TODO: Implement quick actions
@@ -170,6 +181,35 @@ class _AppShellState extends State<AppShell> {
                 Expanded(child: widget.child),
               ],
             ),
+      body: Row(
+        children: [
+          if (_isLoading)
+            const CircularProgressIndicator()
+          else
+            NavigationDrawer(
+              children: _menuItems.map((item) {
+                if (item.subItems.isEmpty) {
+                  return ListTile(
+                    leading: Icon(getIconData(item.icon)),
+                    title: Text(item.title),
+                    onTap: () => context.go(item.path),
+                  );
+                } else {
+                  return ExpansionTile(
+                    leading: Icon(getIconData(item.icon)),
+                    title: Text(item.title),
+                    children: item.subItems.map((subItem) {
+                      return ListTile(
+                        title: Text(subItem.title),
+                        onTap: () => context.go(subItem.path),
+                      );
+                    }).toList(),
+                  );
+                }
+              }).toList(),
+            ),
+          Expanded(
+            child: widget.child,
           ),
         ],
       ),

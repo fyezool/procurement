@@ -82,6 +82,8 @@ func main() {
 	navRoutes.HandleFunc("/menu", navigationHandler.GetMenu).Methods("GET")
 	navRoutes.HandleFunc("/breadcrumbs", navigationHandler.GetBreadcrumbs).Methods("GET")
 
+
+
 	// Vendor routes (Admin only)
 	vendorRoutes := api.PathPrefix("/vendors").Subrouter()
 	vendorRoutes.Use(middleware.AuthMiddleware, middleware.RoleMiddleware("Admin"))

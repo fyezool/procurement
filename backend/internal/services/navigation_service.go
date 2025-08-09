@@ -3,11 +3,13 @@ package services
 import (
 	"procurement-system/internal/models"
 	"strings"
+
 )
 
 type NavigationService interface {
 	GetMenuForRole(role string) []models.NavigationItem
 	GetBreadcrumbsForPath(role, path string) []models.BreadcrumbItem
+
 }
 
 type navigationService struct{}
@@ -30,6 +32,7 @@ func (s *navigationService) GetMenuForRole(role string) []models.NavigationItem 
 		return getEmployeeMenu()
 	}
 }
+
 
 func (s *navigationService) GetBreadcrumbsForPath(role, path string) []models.BreadcrumbItem {
 	menu := s.GetMenuForRole(role)
