@@ -77,4 +77,11 @@ class AuthService extends ChangeNotifier {
       return {};
     }
   }
+
+  void updateUserName(String newName) {
+    if (_user != null) {
+      _user!['name'] = newName;
+      notifyListeners();
+    }
+  }
 }

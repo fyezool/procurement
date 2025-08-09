@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/requisition.dart';
 import '../../services/api_service.dart';
+import '../../widgets/edit_requisition_dialog.dart';
+import '../../widgets/empty_state_widget.dart';
 
 class AllRequisitionsScreen extends StatefulWidget {
   const AllRequisitionsScreen({Key? key}) : super(key: key);
@@ -11,17 +13,94 @@ class AllRequisitionsScreen extends StatefulWidget {
 
 class _AllRequisitionsScreenState extends State<AllRequisitionsScreen> {
   late Future<List<Requisition>> _requisitionsFuture;
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
-    _requisitionsFuture = ApiService().getAllRequisitions();
+    _requisitionsFuture = _apiService.getAllRequisitions();
   }
 
   void _refreshRequisitions() {
     setState(() {
-      _requisitionsFuture = ApiService().getAllRequisitions();
+      _requisitionsFuture = _apiService.getAllRequisitions();
     });
+  }
+
+  void _showEditRequisitionDialog(Requisition requisition) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return EditRequisitionDialog(
+          requisition: requisition,
+          onSave: (updatedData) async {
+            try {
+              await _apiService.adminUpdateRequisition(requisition.id, updatedData);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Requisition updated successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              _refreshRequisitions();
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to update requisition: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmationDialog(Requisition requisition) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Requisition'),
+          content: Text('Are you sure you want to delete this requisition: "${requisition.itemDescription}"?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () async {
+                try {
+                  await _apiService.adminDeleteRequisition(requisition.id);
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Requisition deleted successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  _refreshRequisitions();
+                } catch (e) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete requisition: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -42,9 +121,17 @@ class _AllRequisitionsScreenState extends State<AllRequisitionsScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return EmptyStateWidget(
+              message: 'Failed to load requisitions: ${snapshot.error}',
+              icon: Icons.error_outline,
+              onRetry: _refreshRequisitions,
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No requisitions found.'));
+            return EmptyStateWidget(
+              message: 'No requisitions found in the system.',
+              icon: Icons.description_outlined,
+              onRetry: _refreshRequisitions,
+            );
           }
 
           final requisitions = snapshot.data!;
@@ -59,6 +146,7 @@ class _AllRequisitionsScreenState extends State<AllRequisitionsScreen> {
                   DataColumn(label: Text('Description')),
                   DataColumn(label: Text('Status')),
                   DataColumn(label: Text('Total Price')),
+                  DataColumn(label: Text('Actions')),
                 ],
                 rows: requisitions.map((req) {
                   return DataRow(cells: [
@@ -67,6 +155,18 @@ class _AllRequisitionsScreenState extends State<AllRequisitionsScreen> {
                     DataCell(Text(req.itemDescription)),
                     DataCell(Text(req.status)),
                     DataCell(Text('\$${req.totalPrice.toStringAsFixed(2)}')),
+                    DataCell(Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _showEditRequisitionDialog(req),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _showDeleteConfirmationDialog(req),
+                        ),
+                      ],
+                    )),
                   ]);
                 }).toList(),
               ),

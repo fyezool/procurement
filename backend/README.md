@@ -67,6 +67,14 @@ All endpoints are prefixed with `/api`.
         }
         ```
 
+### Profile Management
+
+*All profile routes require authentication.*
+
+*   **`GET /profile/me`**: Returns the profile of the currently logged-in user.
+*   **`PUT /profile/me`**: Updates the logged-in user's name.
+*   **`PUT /profile/password`**: Changes the logged-in user's password.
+
 ### User Management (Admin Only)
 
 *All user management routes require a valid JWT from an "Admin" user.*
@@ -111,6 +119,8 @@ All endpoints are prefixed with `/api`.
 *   **`GET /requisitions/all`** (Admin Only): Returns a list of all requisitions.
 *   **`POST /requisitions/{id}/approve`** (Admin Only): Approves a PR and creates a Purchase Order.
 *   **`POST /requisitions/{id}/reject`** (Admin Only): Rejects a PR.
+*   **`PUT /admin/requisitions/{id}`** (Admin Only): Updates any requisition's details.
+*   **`DELETE /admin/requisitions/{id}`** (Admin Only): Deletes any requisition.
 
 ### Purchase Orders
 
@@ -119,3 +129,9 @@ All endpoints are prefixed with `/api`.
 *   **`GET /purchase-orders/all`** (Admin Only): Returns a list of all purchase orders.
 *   **`GET /purchase-orders/{id}`**: Returns a purchase order by ID.
 *   **`GET /purchase-orders/{id}/pdf`**: Generates and returns a PDF of the purchase order.
+
+### Activity Log
+
+*All activity log routes require authentication.*
+
+*   **`GET /activity-logs`**: Returns a list of the last 100 activity events in the system.

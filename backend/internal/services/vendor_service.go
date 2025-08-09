@@ -14,15 +14,23 @@ type VendorService interface {
 }
 
 type vendorService struct {
-	repo repository.VendorRepository
+	repo       repository.VendorRepository
+	logService ActivityLogService
 }
 
-func NewVendorService(repo repository.VendorRepository) VendorService {
-	return &vendorService{repo: repo}
+func NewVendorService(repo repository.VendorRepository, logService ActivityLogService) VendorService {
+	return &vendorService{repo: repo, logService: logService}
 }
 
 func (s *vendorService) CreateVendor(vendor *models.Vendor) error {
-	return s.repo.CreateVendor(vendor)
+	err := s.repo.CreateVendor(vendor)
+	if err != nil {
+		details := err.Error()
+		s.logService.Log(nil, "CREATE_VENDOR_FAILED", Ptr("vendor"), nil, "FAILED", &details)
+		return err
+	}
+	s.logService.Log(nil, "CREATE_VENDOR_SUCCESS", Ptr("vendor"), &vendor.ID, "SUCCESS", nil)
+	return nil
 }
 
 func (s *vendorService) GetAllVendors() ([]models.Vendor, error) {
@@ -34,9 +42,23 @@ func (s *vendorService) GetVendorByID(id int) (*models.Vendor, error) {
 }
 
 func (s *vendorService) UpdateVendor(vendor *models.Vendor) error {
-	return s.repo.UpdateVendor(vendor)
+	err := s.repo.UpdateVendor(vendor)
+	if err != nil {
+		details := err.Error()
+		s.logService.Log(nil, "UPDATE_VENDOR_FAILED", Ptr("vendor"), &vendor.ID, "FAILED", &details)
+		return err
+	}
+	s.logService.Log(nil, "UPDATE_VENDOR_SUCCESS", Ptr("vendor"), &vendor.ID, "SUCCESS", nil)
+	return nil
 }
 
 func (s *vendorService) DeleteVendor(id int) error {
-	return s.repo.DeleteVendor(id)
+	err := s.repo.DeleteVendor(id)
+	if err != nil {
+		details := err.Error()
+		s.logService.Log(nil, "DELETE_VENDOR_FAILED", Ptr("vendor"), &id, "FAILED", &details)
+		return err
+	}
+	s.logService.Log(nil, "DELETE_VENDOR_SUCCESS", Ptr("vendor"), &id, "SUCCESS", nil)
+	return nil
 }

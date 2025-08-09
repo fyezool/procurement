@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/requisition.dart';
 import '../../services/api_service.dart';
 import '../../widgets/edit_requisition_dialog.dart';
+import '../../widgets/empty_state_widget.dart';
 
 class MyRequisitionsScreen extends StatefulWidget {
   const MyRequisitionsScreen({Key? key}) : super(key: key);
@@ -121,9 +122,17 @@ class _MyRequisitionsScreenState extends State<MyRequisitionsScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return EmptyStateWidget(
+              message: 'Failed to load your requisitions: ${snapshot.error}',
+              icon: Icons.error_outline,
+              onRetry: _refreshRequisitions,
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('You have not created any requisitions.'));
+            return EmptyStateWidget(
+              message: 'You have not created any requisitions yet.',
+              icon: Icons.description_outlined,
+              onRetry: _refreshRequisitions,
+            );
           }
 
           final requisitions = snapshot.data!;

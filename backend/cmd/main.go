@@ -50,15 +50,17 @@ func main() {
 	vendorRepo := repository.NewPostgresVendorRepository(db)
 	requisitionRepo := repository.NewPostgresRequisitionRepository(db)
 	poRepo := repository.NewPostgresPurchaseOrderRepository(db)
+	activityLogRepo := repository.NewPostgresActivityLogRepository(db)
 
 	// Initialize services
-	authService := services.NewAuthService(userRepo)
-	vendorService := services.NewVendorService(vendorRepo)
+	logService := services.NewActivityLogService(activityLogRepo)
+	authService := services.NewAuthService(userRepo, logService)
+	vendorService := services.NewVendorService(vendorRepo, logService)
 	pdfService := services.NewPDFService()
-	poService := services.NewPurchaseOrderService(poRepo, vendorRepo, pdfService)
-	requisitionService := services.NewRequisitionService(requisitionRepo, poService)
+	poService := services.NewPurchaseOrderService(poRepo, vendorRepo, pdfService) // PO service doesn't log directly yet
+	requisitionService := services.NewRequisitionService(requisitionRepo, poService, logService)
 	navigationService := services.NewNavigationService()
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(userRepo, logService)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)
@@ -67,6 +69,7 @@ func main() {
 	poHandler := handlers.NewPurchaseOrderHandler(poService)
 	navigationHandler := handlers.NewNavigationHandler(navigationService)
 	userHandler := handlers.NewUserHandler(userService)
+	profileHandler := handlers.NewProfileHandler(userService)
 
 	// Create router
 	r := mux.NewRouter()
@@ -77,6 +80,13 @@ func main() {
 	// Auth routes
 	api.HandleFunc("/register", authHandler.Register).Methods("POST")
 	api.HandleFunc("/login", authHandler.Login).Methods("POST")
+
+	// Profile routes
+	profileRoutes := api.PathPrefix("/profile").Subrouter()
+	profileRoutes.Use(middleware.AuthMiddleware)
+	profileRoutes.HandleFunc("/me", profileHandler.GetMyProfile).Methods("GET")
+	profileRoutes.HandleFunc("/me", profileHandler.UpdateMyProfile).Methods("PUT")
+	profileRoutes.HandleFunc("/password", profileHandler.ChangeMyPassword).Methods("PUT")
 
 	// User Management routes (Admin only)
 	userRoutes := api.PathPrefix("/users").Subrouter()
@@ -116,6 +126,8 @@ func main() {
 	adminReqRoutes.HandleFunc("/all", requisitionHandler.GetAllRequisitions).Methods("GET")
 	adminReqRoutes.HandleFunc("/{id:[0-9]+}/approve", requisitionHandler.ApproveRequisition).Methods("POST")
 	adminReqRoutes.HandleFunc("/{id:[0-9]+}/reject", requisitionHandler.RejectRequisition).Methods("POST")
+	adminReqRoutes.HandleFunc("/{id:[0-9]+}", requisitionHandler.AdminUpdateRequisition).Methods("PUT")
+	adminReqRoutes.HandleFunc("/{id:[0-9]+}", requisitionHandler.AdminDeleteRequisition).Methods("DELETE")
 
 	// Purchase Order routes
 	poRoutes := api.PathPrefix("/purchase-orders").Subrouter()

@@ -3,6 +3,7 @@ import '../models/user.dart';
 import '../models/requisition.dart';
 import '../models/purchase_order.dart';
 import '../models/vendor.dart';
+import '../models/activity_log.dart';
 import 'web_storage_service.dart';
 
 class ApiService {
@@ -271,6 +272,85 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Failed to delete vendor: $e');
+    }
+  }
+
+  Future<Requisition> adminUpdateRequisition(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put('/admin/requisitions/$id', data: data);
+      if (response.statusCode == 200) {
+        return Requisition.fromJson(response.data);
+      } else {
+        throw Exception('Failed to admin update requisition');
+      }
+    } catch (e) {
+      throw Exception('Failed to admin update requisition: $e');
+    }
+  }
+
+  Future<void> adminDeleteRequisition(int id) async {
+    try {
+      final response = await _dio.delete('/admin/requisitions/$id');
+      if (response.statusCode != 204) {
+        throw Exception('Failed to admin delete requisition');
+      }
+    } catch (e) {
+      throw Exception('Failed to admin delete requisition: $e');
+    }
+  }
+
+  // Profile methods
+  Future<User> getMyProfile() async {
+    try {
+      final response = await _dio.get('/profile/me');
+      if (response.statusCode == 200) {
+        return User.fromJson(response.data);
+      } else {
+        throw Exception('Failed to load profile');
+      }
+    } catch (e) {
+      throw Exception('Failed to load profile: $e');
+    }
+  }
+
+  Future<User> updateMyProfile(String name) async {
+    try {
+      final response = await _dio.put('/profile/me', data: {'name': name});
+      if (response.statusCode == 200) {
+        return User.fromJson(response.data);
+      } else {
+        throw Exception('Failed to update profile');
+      }
+    } catch (e) {
+      throw Exception('Failed to update profile: $e');
+    }
+  }
+
+  Future<void> changeMyPassword(String oldPassword, String newPassword) async {
+    try {
+      final response = await _dio.put('/profile/password', data: {
+        'old_password': oldPassword,
+        'new_password': newPassword,
+      });
+      if (response.statusCode != 200) {
+        throw Exception('Failed to change password');
+      }
+    } catch (e) {
+      throw Exception('Failed to change password: $e');
+    }
+  }
+
+  Future<List<ActivityLog>> getActivityLogs() async {
+    try {
+      final response = await _dio.get('/activity-logs');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => ActivityLog.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load activity logs');
+      }
+    } catch (e) {
+      throw Exception('Failed to load activity logs: $e');
     }
   }
 }

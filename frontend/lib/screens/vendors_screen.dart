@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../models/vendor.dart';
 import '../services/api_service.dart';
 import '../widgets/edit_vendor_dialog.dart';
+import '../widgets/empty_state_widget.dart';
 
 class VendorsScreen extends StatefulWidget {
   const VendorsScreen({Key? key}) : super(key: key);
@@ -121,9 +122,17 @@ class _VendorsScreenState extends State<VendorsScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return EmptyStateWidget(
+              message: 'Failed to load vendors: ${snapshot.error}',
+              icon: Icons.error_outline,
+              onRetry: _refreshVendors,
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No vendors found.'));
+            return EmptyStateWidget(
+              message: 'No vendors found. Tap the button to add one.',
+              icon: Icons.store_mall_directory_outlined,
+              onRetry: _refreshVendors,
+            );
           }
 
           final vendors = snapshot.data!;

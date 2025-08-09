@@ -100,7 +100,13 @@ func (h *RequisitionHandler) ApproveRequisition(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if err := h.service.ApproveRequisition(id); err != nil {
+	adminID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.service.ApproveRequisition(id, adminID); err != nil {
 		http.Error(w, "Failed to approve requisition", http.StatusInternalServerError)
 		return
 	}
@@ -117,7 +123,13 @@ func (h *RequisitionHandler) RejectRequisition(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	if err := h.service.RejectRequisition(id); err != nil {
+	adminID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.service.RejectRequisition(id, adminID); err != nil {
 		http.Error(w, "Failed to reject requisition", http.StatusInternalServerError)
 		return
 	}
@@ -194,6 +206,72 @@ func (h *RequisitionHandler) DeleteRequisition(w http.ResponseWriter, r *http.Re
 		case repository.ErrRequisitionNotFound:
 			http.Error(w, err.Error(), http.StatusNotFound)
 		default:
+			http.Error(w, "Failed to delete requisition", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *RequisitionHandler) AdminUpdateRequisition(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid requisition ID", http.StatusBadRequest)
+		return
+	}
+
+	var payload models.CreateRequisitionPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.validate.Struct(payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	adminID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	requisition, err := h.service.AdminUpdateRequisition(id, adminID, payload)
+	if err != nil {
+		if err == repository.ErrRequisitionNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to update requisition", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(requisition)
+}
+
+func (h *RequisitionHandler) AdminDeleteRequisition(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid requisition ID", http.StatusBadRequest)
+		return
+	}
+
+	adminID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	err = h.service.AdminDeleteRequisition(id, adminID)
+	if err != nil {
+		if err == repository.ErrRequisitionNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
 			http.Error(w, "Failed to delete requisition", http.StatusInternalServerError)
 		}
 		return
