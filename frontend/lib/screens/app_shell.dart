@@ -191,7 +191,6 @@ class _AppShellState extends State<AppShell> {
   }
 
   Widget _buildBottomNav() {
-    // Only show top-level items in the bottom nav
     final topLevelItems = _menuItems.where((item) => item.subItems.isEmpty).toList();
 
     return BottomNavigationBar(
