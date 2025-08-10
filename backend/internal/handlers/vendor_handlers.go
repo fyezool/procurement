@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"procurement-system/internal/middleware"
 	"procurement-system/internal/models"
 	"procurement-system/internal/repository"
 	"procurement-system/internal/services"
@@ -37,7 +38,13 @@ func (h *VendorHandler) CreateVendor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.CreateVendor(&vendor); err != nil {
+	actorID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.service.CreateVendor(actorID, &vendor); err != nil {
 		http.Error(w, "Failed to create vendor", http.StatusInternalServerError)
 		return
 	}
@@ -99,7 +106,14 @@ func (h *VendorHandler) UpdateVendor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vendor.ID = id
-	if err := h.service.UpdateVendor(&vendor); err != nil {
+
+	actorID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.service.UpdateVendor(actorID, &vendor); err != nil {
 		if errors.Is(err, repository.ErrVendorNotFound) {
 			http.Error(w, "Vendor not found", http.StatusNotFound)
 			return
@@ -120,7 +134,13 @@ func (h *VendorHandler) DeleteVendor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.DeleteVendor(id); err != nil {
+	actorID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.service.DeleteVendor(actorID, id); err != nil {
 		if errors.Is(err, repository.ErrVendorNotFound) {
 			http.Error(w, "Vendor not found", http.StatusNotFound)
 			return

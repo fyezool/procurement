@@ -36,7 +36,7 @@ func (r *postgresVendorRepository) CreateVendor(vendor *models.Vendor) error {
 }
 
 func (r *postgresVendorRepository) GetAllVendors() ([]models.Vendor, error) {
-	query := `SELECT id, name, contact_person, email, phone, address FROM vendors`
+	query := `SELECT id, name, contact_person, email, phone, address FROM vendors ORDER BY name ASC`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err

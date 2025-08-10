@@ -6,11 +6,11 @@ import (
 )
 
 type VendorService interface {
-	CreateVendor(vendor *models.Vendor) error
+	CreateVendor(actorID int, vendor *models.Vendor) error
 	GetAllVendors() ([]models.Vendor, error)
 	GetVendorByID(id int) (*models.Vendor, error)
-	UpdateVendor(vendor *models.Vendor) error
-	DeleteVendor(id int) error
+	UpdateVendor(actorID int, vendor *models.Vendor) error
+	DeleteVendor(actorID int, id int) error
 }
 
 type vendorService struct {
@@ -22,14 +22,14 @@ func NewVendorService(repo repository.VendorRepository, logService ActivityLogSe
 	return &vendorService{repo: repo, logService: logService}
 }
 
-func (s *vendorService) CreateVendor(vendor *models.Vendor) error {
+func (s *vendorService) CreateVendor(actorID int, vendor *models.Vendor) error {
 	err := s.repo.CreateVendor(vendor)
 	if err != nil {
 		details := err.Error()
-		s.logService.Log(nil, "CREATE_VENDOR_FAILED", Ptr("vendor"), nil, "FAILED", &details)
+		s.logService.Log(&actorID, "CREATE_VENDOR_FAILED", Ptr("vendor"), nil, "FAILED", &details)
 		return err
 	}
-	s.logService.Log(nil, "CREATE_VENDOR_SUCCESS", Ptr("vendor"), &vendor.ID, "SUCCESS", nil)
+	s.logService.Log(&actorID, "CREATE_VENDOR_SUCCESS", Ptr("vendor"), &vendor.ID, "SUCCESS", nil)
 	return nil
 }
 
@@ -41,24 +41,24 @@ func (s *vendorService) GetVendorByID(id int) (*models.Vendor, error) {
 	return s.repo.GetVendorByID(id)
 }
 
-func (s *vendorService) UpdateVendor(vendor *models.Vendor) error {
+func (s *vendorService) UpdateVendor(actorID int, vendor *models.Vendor) error {
 	err := s.repo.UpdateVendor(vendor)
 	if err != nil {
 		details := err.Error()
-		s.logService.Log(nil, "UPDATE_VENDOR_FAILED", Ptr("vendor"), &vendor.ID, "FAILED", &details)
+		s.logService.Log(&actorID, "UPDATE_VENDOR_FAILED", Ptr("vendor"), &vendor.ID, "FAILED", &details)
 		return err
 	}
-	s.logService.Log(nil, "UPDATE_VENDOR_SUCCESS", Ptr("vendor"), &vendor.ID, "SUCCESS", nil)
+	s.logService.Log(&actorID, "UPDATE_VENDOR_SUCCESS", Ptr("vendor"), &vendor.ID, "SUCCESS", nil)
 	return nil
 }
 
-func (s *vendorService) DeleteVendor(id int) error {
+func (s *vendorService) DeleteVendor(actorID int, id int) error {
 	err := s.repo.DeleteVendor(id)
 	if err != nil {
 		details := err.Error()
-		s.logService.Log(nil, "DELETE_VENDOR_FAILED", Ptr("vendor"), &id, "FAILED", &details)
+		s.logService.Log(&actorID, "DELETE_VENDOR_FAILED", Ptr("vendor"), &id, "FAILED", &details)
 		return err
 	}
-	s.logService.Log(nil, "DELETE_VENDOR_SUCCESS", Ptr("vendor"), &id, "SUCCESS", nil)
+	s.logService.Log(&actorID, "DELETE_VENDOR_SUCCESS", Ptr("vendor"), &id, "SUCCESS", nil)
 	return nil
 }
