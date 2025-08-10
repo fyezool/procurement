@@ -16,7 +16,7 @@ class Requisition {
   final double estimatedPrice;
   @JsonKey(name: 'total_price')
   final double totalPrice;
-  final String justification;
+  final String? justification;
   final String status;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
@@ -29,7 +29,7 @@ class Requisition {
     required this.quantity,
     required this.estimatedPrice,
     required this.totalPrice,
-    required this.justification,
+    this.justification,
     required this.status,
     required this.createdAt,
   });

@@ -14,7 +14,7 @@ Requisition _$RequisitionFromJson(Map<String, dynamic> json) => Requisition(
       quantity: (json['quantity'] as num).toInt(),
       estimatedPrice: (json['estimated_price'] as num).toDouble(),
       totalPrice: (json['total_price'] as num).toDouble(),
-      justification: json['justification'] as String,
+      justification: json['justification'] as String?,
       status: json['status'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
     );

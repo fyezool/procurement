@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"procurement-system/internal/middleware"
 	"strconv"
 
 	"procurement-system/internal/models"
@@ -69,9 +70,15 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 // UpdateUser handles the request to update a user's details.
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	targetUserID, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	actorID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
 		return
 	}
 
@@ -86,7 +93,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userService.UpdateUser(id, payload)
+	user, err := h.userService.UpdateUser(actorID, targetUserID, payload)
 	if err != nil {
 		if err == repository.ErrUserNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -105,13 +112,19 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 // DeleteUser handles the request to delete a user.
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
+	targetUserID, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	if err := h.userService.DeleteUser(id); err != nil {
+	actorID, ok := r.Context().Value(middleware.UserIDKey).(int)
+	if !ok {
+		http.Error(w, "Could not get user ID from context", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.userService.DeleteUser(actorID, targetUserID); err != nil {
 		if err == repository.ErrUserNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
 		} else {

@@ -130,12 +130,16 @@ func seedUsers() []models.User {
 	return createdUsers
 }
 
+func stringPtr(s string) *string {
+	return &s
+}
+
 func seedVendors() []models.Vendor {
 	fmt.Println("Seeding vendors...")
 	vendorsToCreate := []models.Vendor{
-		{Name: "Tech Supplies Inc.", ContactPerson: "John Smith", Email: "contact@techsupplies.com", Phone: "123-456-7890", Address: "123 Tech Park, Silicon Valley, CA"},
-		{Name: "Office Furniture Co.", ContactPerson: "Jane Doe", Email: "sales@officefurn.com", Phone: "098-765-4321", Address: "456 Business Rd, New York, NY"},
-		{Name: "Global IT Solutions", ContactPerson: "Peter Jones", Email: "info@globalit.com", Phone: "555-555-5555", Address: "789 Enterprise Way, London, UK"},
+		{Name: "Tech Supplies Inc.", ContactPerson: stringPtr("John Smith"), Email: stringPtr("contact@techsupplies.com"), Phone: stringPtr("123-456-7890"), Address: stringPtr("123 Tech Park, Silicon Valley, CA")},
+		{Name: "Office Furniture Co.", ContactPerson: stringPtr("Jane Doe"), Email: stringPtr("sales@officefurn.com"), Phone: stringPtr("098-765-4321"), Address: stringPtr("456 Business Rd, New York, NY")},
+		{Name: "Global IT Solutions", ContactPerson: stringPtr("Peter Jones"), Email: stringPtr("info@globalit.com"), Phone: stringPtr("555-555-5555"), Address: stringPtr("789 Enterprise Way, London, UK")},
 	}
 
 	var createdVendors []models.Vendor

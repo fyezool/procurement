@@ -16,8 +16,8 @@ var (
 type UserService interface {
 	GetAllUsers() ([]models.User, error)
 	GetUserByID(id int) (*models.User, error)
-	UpdateUser(id int, payload models.UpdateUserPayload) (*models.User, error)
-	DeleteUser(id int) error
+	UpdateUser(actorID int, targetUserID int, payload models.UpdateUserPayload) (*models.User, error)
+	DeleteUser(actorID int, targetUserID int) error
 	UpdateMyProfile(userID int, payload models.UpdateProfilePayload) (*models.User, error)
 	ChangeMyPassword(userID int, payload models.ChangePasswordPayload) error
 }
@@ -49,9 +49,9 @@ func (s *userService) GetUserByID(id int) (*models.User, error) {
 }
 
 // UpdateUser updates a user's details based on the provided payload.
-func (s *userService) UpdateUser(id int, payload models.UpdateUserPayload) (*models.User, error) {
+func (s *userService) UpdateUser(actorID int, targetUserID int, payload models.UpdateUserPayload) (*models.User, error) {
 	// Get the existing user to ensure they exist before updating.
-	user, err := s.userRepo.GetUserByID(id)
+	user, err := s.userRepo.GetUserByID(targetUserID)
 	if err != nil {
 		return nil, err // Handles repository.ErrUserNotFound
 	}
@@ -64,11 +64,11 @@ func (s *userService) UpdateUser(id int, payload models.UpdateUserPayload) (*mod
 	err = s.userRepo.UpdateUser(user)
 	if err != nil {
 		details := err.Error()
-		s.logService.Log(nil, "UPDATE_USER_FAILED", Ptr("user"), &id, "FAILED", &details)
+		s.logService.Log(&actorID, "UPDATE_USER_FAILED", Ptr("user"), &targetUserID, "FAILED", &details)
 		return nil, err
 	}
 
-	s.logService.Log(nil, "UPDATE_USER_SUCCESS", Ptr("user"), &id, "SUCCESS", nil)
+	s.logService.Log(&actorID, "UPDATE_USER_SUCCESS", Ptr("user"), &targetUserID, "SUCCESS", nil)
 
 	// Return the updated user model, ensuring password hash is not exposed.
 	user.HashedPassword = ""
@@ -76,14 +76,14 @@ func (s *userService) UpdateUser(id int, payload models.UpdateUserPayload) (*mod
 }
 
 // DeleteUser deletes a user by their ID.
-func (s *userService) DeleteUser(id int) error {
-	err := s.userRepo.DeleteUser(id)
+func (s *userService) DeleteUser(actorID int, targetUserID int) error {
+	err := s.userRepo.DeleteUser(targetUserID)
 	if err != nil {
 		details := err.Error()
-		s.logService.Log(nil, "DELETE_USER_FAILED", Ptr("user"), &id, "FAILED", &details)
+		s.logService.Log(&actorID, "DELETE_USER_FAILED", Ptr("user"), &targetUserID, "FAILED", &details)
 		return err
 	}
-	s.logService.Log(nil, "DELETE_USER_SUCCESS", Ptr("user"), &id, "SUCCESS", nil)
+	s.logService.Log(&actorID, "DELETE_USER_SUCCESS", Ptr("user"), &targetUserID, "SUCCESS", nil)
 	return nil
 }
 
